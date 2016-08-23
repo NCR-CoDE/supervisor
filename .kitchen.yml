@@ -1,4 +1,8 @@
-driver_plugin: vagrant
+---
+driver:
+  name: vagrant
+  synced_folders:
+    - ["test/sync_fold","/vagrant"]
 
 platforms:
   - name: centos-7.2

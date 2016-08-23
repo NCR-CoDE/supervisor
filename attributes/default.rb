@@ -36,3 +36,6 @@ default['supervisor']['logfile_backups'] = 10
 default['supervisor']['loglevel'] = 'info'
 default['supervisor']['minfds'] = 1024
 default['supervisor']['minprocs'] = 200
+
+default['python']['prefix_dir']='/usr/'
+default['python']['pip_location'] = "#{node['python']['prefix_dir']}/bin/pip"

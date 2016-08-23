@@ -1,0 +1,15 @@
+
+//#cp test/integration/resources/test-attributes.rb attributes/defaults.rb
+
+task kitchenTest( description: 'Run kitchen test for the cookbook')<<{
+  exec {
+    commandLine 'bash','-c','eval "$(chef shell-init bash)" && berks && kitchen test '
+  }
+}
+
+
+task releaseCookbook(dependsOn:kitchenTest, description: 'Run kitchen tests and then release a new version')<<{
+  exec {
+    commandLine 'bash','-c','thor ncr:release'
+  }
+}

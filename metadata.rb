@@ -7,8 +7,8 @@ version           "0.4.11"
 
 recipe "supervisor", "Installs and configures supervisord"
 
-depends "python"
+depends "poise-python"
 
-%w{ ubuntu debian redhat centos fedora amazon smartos }.each do |os|
+%w{ redhat centos }.each do |os|
   supports os
 end

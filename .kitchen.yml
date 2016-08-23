@@ -1,16 +1,15 @@
 driver_plugin: vagrant
-driver_config:
-  require_chef_omnibus: true
 
 platforms:
-  - name: ubuntu-12.04
-    run_list:
-    - recipe[apt::default]
-  - name: ubuntu-10.04
-    run_list:
-      - recipe[apt::default]
-  - name: centos-6.4
-  - name: centos-5.9
+  - name: centos-7.2
+    driver: 
+      vagrantfile_erb: Vagrantfile.erb
+  - name: centos-6.8
+    driver: 
+      box: centos-x86_64_packer-6.8.2
+      box_url: http://vagrantresources/boxes/centos-x86_64_packer-6.8.2.box
+      vagrantfile_erb: Vagrantfile.erb
+
 
 suites:
   - name: default

@@ -7,8 +7,6 @@ version           "0.4.11"
 
 recipe "supervisor", "Installs and configures supervisord"
 
-depends "poise-python"
-
 %w{ redhat centos }.each do |os|
   supports os
 end

@@ -22,7 +22,7 @@ include_recipe "supervisor::pip"
 
 
 supervisor_pip "supervisor" do
-  action :upgrade
+  action :install
   version node['supervisor']['version'] if node['supervisor']['version']
 end
 
@@ -63,12 +63,12 @@ template "/etc/default/supervisor" do
 end
 
 init_template_dir = value_for_platform_family(
-  ["rhel", "fedora","centos"] => "rhel",
+  ["rhel", "fedora","centos","oracle"] => "rhel",
   "debian" => "debian"
 )
 
 case node['platform']
-when "amazon", "centos", "debian", "fedora", "redhat", "ubuntu"
+when "amazon", "centos", "debian", "fedora", "redhat", "ubuntu", "oracle"
   template "/etc/init.d/supervisor" do
     source "#{init_template_dir}/supervisor.init.erb"
     owner "root"

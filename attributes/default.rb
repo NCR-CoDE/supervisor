@@ -36,6 +36,13 @@ default['supervisor']['logfile_backups'] = 10
 default['supervisor']['loglevel'] = 'info'
 default['supervisor']['minfds'] = 1024
 default['supervisor']['minprocs'] = 200
-
-default['python']['prefix_dir']='/usr/'
+if node['platform_version'].to_i < 7
+  default['python']['prefix_dir']='/usr/local'
+  default['python']['version'] = '2.7'
+  default['python']['pathlevel'] = '14'
+else
+  default['python']['prefix_dir']='/usr/'
+end
+default['python']['fullver']="#{node['python']['version']}.#{node['python']['pathlevel']}"
 default['python']['pip_location'] = "#{node['python']['prefix_dir']}/bin/pip"
+default['python']['url'] = "http://python.org/ftp/python/#{node['python']['fullver']}/Python-#{node['python']['fullver']}.tgz"

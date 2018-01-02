@@ -14,8 +14,15 @@ platforms:
       box: centos-x86_64_packer-7.3.0
       box_url: http://vagrantresources/boxes/centos-x86_64_packer-60000-7.3.0.box
       vagrantfile_erb: Vagrantfile.erb
+  - name: centos-6.8
+    driver: 
+      box: centos-x86_64_packer-6.8.2
+      box_url: http://vagrantresources/boxes/centos-x86_64_packer-6.8.2.box
+      vagrantfile_erb: Vagrantfile.erb
+
 
 suites:
   - name: default
     run_list:
+      - recipe[supervisor::compile_python]
       - recipe[supervisor::default]

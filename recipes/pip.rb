@@ -39,10 +39,16 @@ cookbook_file "#{Chef::Config[:file_cache_path]}/get-pip.py" do
   not_if { ::File.exists?(pip_binary) }
 end
 
+if node['platform_version'].to_i < 7
+  python_bin="#{node['python']['prefix_dir']}/bin/python#{node['python']['version']}"
+else
+  python_bin="#{node['python']['prefix_dir']}/bin/python"
+end
+
 execute "install-pip" do
   cwd Chef::Config[:file_cache_path]
   command <<-EOF
-  python get-pip.py
+  "#{python_bin}" get-pip.py
   EOF
   not_if { ::File.exists?(pip_binary) }
 end

@@ -7,7 +7,7 @@ driver:
 provisioner:
   name: chef_solo
   product_name: chef
-  product_version: 12.14.89
+  product_version: 14.10.9
 
 platforms:
   - name: centos-7.6

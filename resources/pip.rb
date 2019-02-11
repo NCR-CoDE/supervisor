@@ -18,20 +18,34 @@
 # limitations under the License.
 #
 
-actions :install, :upgrade, :remove, :purge
-default_action :install if defined?(default_action) # Chef > 10.8
+#actions :install, :upgrade, :remove, :purge
+#default_action :install if defined?(default_action) # Chef > 10.8
+#
+## Default action for Chef <= 10.8
+#def initialize(*args)
+#  super
+#  @action = :install
+#end
 
-# Default action for Chef <= 10.8
-def initialize(*args)
-  super
-  @action = :install
+#attribute :package_name, :kind_of => String, :name_attribute => true
+#attribute :version, :default => nil
+#attribute :timeout, :default => 900
+#attribute :virtualenv, :kind_of => String
+#attribute :user, :regex => Chef::Config[:user_valid_regex]
+#attribute :group, :regex => Chef::Config[:group_valid_regex]
+#attribute :options, :kind_of => String, :default => ''
+#attribute :environment, :kind_of => Hash, :default => {}
+
+resource_name :supervisor_pip
+
+property :version, String, default: 'latest'
+property :timeout, Integer, default: 900
+property :user, regex: Chef::Config[:user_valid_regex]
+property :group, regex: Chef::Config[:group_valid_regex]
+property :environment, Hash, default: {}
+
+action :install do
+  options = { :timeout => new_resource.timeout, :user => new_resource.user, :group => new_resource.group }
+  shell_out("#{node['python']['pip_location']} install supervisor", options)
 end
 
-attribute :package_name, :kind_of => String, :name_attribute => true
-attribute :version, :default => nil
-attribute :timeout, :default => 900
-attribute :virtualenv, :kind_of => String
-attribute :user, :regex => Chef::Config[:user_valid_regex]
-attribute :group, :regex => Chef::Config[:group_valid_regex]
-attribute :options, :kind_of => String, :default => ''
-attribute :environment, :kind_of => Hash, :default => {}

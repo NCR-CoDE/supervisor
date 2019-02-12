@@ -18,34 +18,28 @@
 # limitations under the License.
 #
 
-#actions :install, :upgrade, :remove, :purge
-#default_action :install if defined?(default_action) # Chef > 10.8
-#
-## Default action for Chef <= 10.8
-#def initialize(*args)
-#  super
-#  @action = :install
-#end
-
-#attribute :package_name, :kind_of => String, :name_attribute => true
-#attribute :version, :default => nil
-#attribute :timeout, :default => 900
-#attribute :virtualenv, :kind_of => String
-#attribute :user, :regex => Chef::Config[:user_valid_regex]
-#attribute :group, :regex => Chef::Config[:group_valid_regex]
-#attribute :options, :kind_of => String, :default => ''
-#attribute :environment, :kind_of => Hash, :default => {}
-
 resource_name :supervisor_pip
 
+property :package_name, String, name_property: true
 property :version, String, default: 'latest'
 property :timeout, Integer, default: 900
+property :virtualenv, String
 property :user, regex: Chef::Config[:user_valid_regex]
 property :group, regex: Chef::Config[:group_valid_regex]
+property :options, String, default: ''
 property :environment, Hash, default: {}
 
+default_action :install
+
 action :install do
+  pip_cmd('install', new_resource)
+end
+
+def pip_cmd(subcommand, new_resource)
   options = { :timeout => new_resource.timeout, :user => new_resource.user, :group => new_resource.group }
-  shell_out("#{node['python']['pip_location']} install supervisor", options)
+
+  unless subcommand.nil? || subcommand.empty?
+    shell_out("#{node['python']['pip_location']} #{subcommand} #{new_resource.package_name}", options)
+  end
 end
 

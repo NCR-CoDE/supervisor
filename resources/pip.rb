@@ -37,9 +37,28 @@ end
 
 def pip_cmd(subcommand, new_resource)
   options = { :timeout => new_resource.timeout, :user => new_resource.user, :group => new_resource.group }
+  version = ''
 
-  unless subcommand.nil? || subcommand.empty?
-    shell_out("#{node['python']['pip_location']} #{subcommand} #{new_resource.package_name}", options)
+  if (new_resource.version != 'latest') && (new_resource.version != '')
+    version = "==#{new_resource.version}"
+  end
+
+  environment = Hash.new
+
+  if new_resource.user
+    environment['HOME'] = Dir.home(new_resource.user)
+  end
+
+  if new_resource.environment && !new_resource.environment.empty?
+    environment.merge!(new_resource.environment)
+  end
+
+  options[:environment] = environment
+  
+  if !subcommand.nil? && !subcommand.empty?
+    cmd = "#{node['python']['pip_location']} #{subcommand} #{new_resource.options} #{new_resource.package_name}#{version}"
+    Chef::Log.error("Running cmd: #{cmd}")
+    shell_out(cmd, options)
   end
 end
 

@@ -35,6 +35,16 @@ action :install do
   pip_cmd('install', new_resource)
 end
 
+action :upgrade do
+  new_resource.options "#{new_resource.options} --upgrade"
+  pip_cmd('install', new_resource)
+end
+
+action :remove do
+  new_resource.options "#{new_resource.options} --yes"
+  pip_cmd('uninstall', new_resource)
+end
+
 def pip_cmd(subcommand, new_resource)
   options = { :timeout => new_resource.timeout, :user => new_resource.user, :group => new_resource.group }
   version = ''
@@ -57,7 +67,7 @@ def pip_cmd(subcommand, new_resource)
   
   if !subcommand.nil? && !subcommand.empty?
     cmd = "#{node['python']['pip_location']} #{subcommand} #{new_resource.options} #{new_resource.package_name}#{version}"
-    Chef::Log.error("Running cmd: #{cmd}")
+    Chef::Log.info("Running cmd: #{cmd}")
     shell_out(cmd, options)
   end
 end

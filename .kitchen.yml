@@ -6,20 +6,13 @@ driver:
 
 provisioner:
   name: chef_solo
-  require_chef_omnibus: 12.14.89
+  product_name: chef
+  product_version: 14.10.9
 
 platforms:
-  - name: centos-7.3
+  - name: centos-7.6
     driver:
-      box: centos-x86_64_packer-7.3.0
-      box_url: http://vagrantresources/boxes/centos-x86_64_packer-60000-7.3.0.box
-      vagrantfile_erb: Vagrantfile.erb
-  - name: centos-6.8
-    driver: 
-      box: centos-x86_64_packer-6.8.2
-      box_url: http://vagrantresources/boxes/centos-x86_64_packer-6.8.2.box
-      vagrantfile_erb: Vagrantfile.erb
-
+      gui: false
 
 suites:
   - name: default

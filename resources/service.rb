@@ -18,43 +18,43 @@
 # limitations under the License.
 #
 
-actions :enable, :disable, :start, :stop, :restart
+resource_name :supervisor_service
+
 default_action :enable
 
-attribute :service_name, :kind_of => String, :name_attribute => true
-attribute :command, :kind_of => String
-attribute :process_name, :kind_of => String, :default => '%(program_name)s'
-attribute :numprocs, :kind_of => Integer, :default => 1
-attribute :numprocs_start, :kind_of => Integer, :default => 0
-attribute :priority, :kind_of => Integer, :default => 999
-attribute :autostart, :kind_of => [TrueClass, FalseClass], :default => true
-attribute :autorestart, :kind_of => [String, Symbol, TrueClass, FalseClass], :default => :unexpected
-attribute :startsecs, :kind_of => Integer, :default => 1
-attribute :startretries, :kind_of => Integer, :default => 3
-attribute :exitcodes, :kind_of => Array, :default => [0, 2]
-attribute :stopsignal, :kind_of => [String, Symbol], :default => :TERM
-attribute :stopwaitsecs, :kind_of => Integer, :default => 10
-attribute :stopasgroup, :kind_of => [TrueClass,FalseClass], :default => nil
-attribute :killasgroup, :kind_of => [TrueClass,FalseClass], :default => nil
-attribute :user, :kind_of => [String, NilClass], :default => nil
-attribute :redirect_stderr, :kind_of => [TrueClass, FalseClass], :default => false
-attribute :stdout_logfile, :kind_of => String, :default => 'AUTO'
-attribute :stdout_logfile_maxbytes, :kind_of => String, :default => '50MB'
-attribute :stdout_logfile_backups, :kind_of => Integer, :default => 10
-attribute :stdout_capture_maxbytes, :kind_of => String, :default => '0'
-attribute :stdout_events_enabled, :kind_of => [TrueClass, FalseClass], :default => false
-attribute :stderr_logfile, :kind_of => String, :default => 'AUTO'
-attribute :stderr_logfile_maxbytes, :kind_of => String, :default => '50MB'
-attribute :stderr_logfile_backups, :kind_of => Integer, :default => 10
-attribute :stderr_capture_maxbytes, :kind_of => String, :default => '0'
-attribute :stderr_events_enabled, :kind_of => [TrueClass, FalseClass], :default => false
-attribute :environment, :kind_of => Hash, :default => {}
-attribute :directory, :kind_of => [String, NilClass], :default => nil
-attribute :umask, :kind_of => [NilClass, String], :default => nil
-attribute :serverurl, :kind_of => String, :default => 'AUTO'
+property :service_name, String, name_property: true
+property :command, String
+property :process_name, String, default: '%(program_name)s'
+property :numprocs, Integer, default: 1
+property :numprocs_start, Integer, default: 0
+property :priority, Integer, default: 999
+property :autostart, [TrueClass, FalseClass], default: true
+property :autorestart, [String, Symbol, TrueClass, FalseClass], default: :unexpected
+property :startsecs, Integer, default: 1
+property :startretries, Integer, default: 3
+property :exitcodes, Array, default: [0, 2]
+property :stopsignal, [String, Symbol], default: :TERM
+property :stopwaitsecs, Integer, default: 10
+property :stopasgroup, [TrueClass,FalseClass], default: nil
+property :killasgroup, [TrueClass,FalseClass], default: nil
+property :user, [String, NilClass], default: nil
+property :redirect_stderr, [TrueClass, FalseClass], default: false
+property :stdout_logfile, String, default: 'AUTO'
+property :stdout_logfile_maxbytes, String, default: '50MB'
+property :stdout_logfile_backups, Integer, default: 10
+property :stdout_capture_maxbytes, String, default: 0
+property :stdout_events_enabled, [TrueClass, FalseClass], default: false
+property :stderr_logfile, String, default: 'AUTO'
+property :stderr_logfile_maxbytes, String, default: '50MB'
+property :stderr_logfile_backups, Integer, default: 10
+property :stderr_capture_maxbytes, String, default: '0'
+property :stderr_events_enabled, [TrueClass, FalseClass], default: false
+property :environment, Hash, default: {}
+property :directory, [String, NilClass], default: nil 
+property :umask, [NilClass, String], default: nil
+property :serverurl, String, default: 'AUTO'
 
-attribute :eventlistener, :kind_of => [TrueClass,FalseClass], :default => false
-attribute :eventlistener_buffer_size, :kind_of => Integer, :default => nil
-attribute :eventlistener_events, :kind_of => Array, :default => nil
+property :eventlistener, [TrueClass,FalseClass], default: false
+property :eventlistener_buffer_size, Integer, default: nil
+property :eventlistener_events, Array, default: nil
 
-attr_accessor :state

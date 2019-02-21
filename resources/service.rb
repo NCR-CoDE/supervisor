@@ -35,14 +35,14 @@ property :startretries, Integer, default: 3
 property :exitcodes, Array, default: [0, 2]
 property :stopsignal, [String, Symbol], default: :TERM
 property :stopwaitsecs, Integer, default: 10
-property :stopasgroup, [TrueClass,FalseClass], default: nil
-property :killasgroup, [TrueClass,FalseClass], default: nil
+property :stopasgroup, [TrueClass,FalseClass,NilClass], default: nil
+property :killasgroup, [TrueClass,FalseClass,NilClass], default: nil
 property :user, [String, NilClass], default: nil
 property :redirect_stderr, [TrueClass, FalseClass], default: false
 property :stdout_logfile, String, default: 'AUTO'
 property :stdout_logfile_maxbytes, String, default: '50MB'
 property :stdout_logfile_backups, Integer, default: 10
-property :stdout_capture_maxbytes, String, default: 0
+property :stdout_capture_maxbytes, String, default: '0'
 property :stdout_events_enabled, [TrueClass, FalseClass], default: false
 property :stderr_logfile, String, default: 'AUTO'
 property :stderr_logfile_maxbytes, String, default: '50MB'
@@ -55,6 +55,101 @@ property :umask, [NilClass, String], default: nil
 property :serverurl, String, default: 'AUTO'
 
 property :eventlistener, [TrueClass,FalseClass], default: false
-property :eventlistener_buffer_size, Integer, default: nil
-property :eventlistener_events, Array, default: nil
+property :eventlistener_buffer_size, [Integer, NilClass], default: nil
+property :eventlistener_events, Array, default: []
 
+def load_current_value
+  result = shell_out("supervisorctl status")
+  match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
+
+  @current_resource.state = get_current_state(new_resource.name)
+end
+
+action :enable do
+  e = execute "supervisorctl update" do
+    action :nothing
+    user "root"
+  end
+
+  t = template "#{node['supervisor']['dir']}/#{new_resource.service_name}.conf" do
+    source "program.conf.erb"
+    cookbook "supervisor"
+    owner "root"
+    group "root"
+    mode "644"
+    variables :prog => new_resource
+    notifies :run, "execute[supervisorctl update]", :immediately
+  end
+
+  t.run_action(:create)
+  if t.updated?
+    e.run_action(:run)
+  end
+end
+
+action :start do
+  case current_resource.state
+  when 'UNAVAILABLE'
+    raise "Supervisor service #{new_resource.name} cannot be started because it does not exist"
+  when 'RUNNING'
+    Chef::Log.debug "#{ new_resource } is already started."
+  when 'STARTING'
+    Chef::Log.debug "#{ new_resource } is already starting."
+    wait_til_state("RUNNING")
+  else
+    if not supervisorctl('start', new_resource)
+      raise "Supervisor service #{new_resource.name} was unable to be started"
+    end
+  end
+end
+
+def enable_service(new_resource)
+  execute "supervisorctl update" do
+    action :nothing
+    user "root"
+  end
+
+  t = template "#{node['supervisor']['dir']}/#{new_resource.service_name}.conf" do
+    source "program.conf.erb"
+    cookbook "supervisor"
+    owner "root"
+    group "root"
+    mode "644"
+    variables :prog => new_resource
+    notifies :run, "execute[supervisorctl update]", :immediately
+  end
+
+  t.run_action(:create)
+  if t.updated?
+    e.run_action(:run)
+  end
+end
+
+def get_current_state(service_name)
+  result = shell_out("supervisorctl status")
+  match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
+
+  if match.nil?
+    "UNAVAILABLE"
+  else
+    match[3]
+  end
+end
+
+def supervisorctl(action, new_resource)
+  cmd = "supervisorctl #{action} #{cmd_line_args(new_resource)} | grep -v ERROR"
+  Chef::Log.error("CGY - Running #{cmd}")
+  result = shell_out(cmd).run_command
+  # Since we append grep to the command
+  # The command will have an exit code of 1 upon failure
+  # So 0 here means it was successful
+  result.exitstatus == 0
+end
+
+def cmd_line_args(new_resource)
+  name = new_resource.service_name
+  if new_resource.process_name != '%(program_name)s'
+    name += ':*'
+  end
+  name
+end

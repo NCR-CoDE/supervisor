@@ -58,11 +58,10 @@ property :eventlistener, [TrueClass,FalseClass], default: false
 property :eventlistener_buffer_size, [Integer, NilClass], default: nil
 property :eventlistener_events, Array, default: []
 
-def load_current_value
-  result = shell_out("supervisorctl status")
-  match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
+attr_accessor :state
 
-  @current_resource.state = get_current_state(new_resource.name)
+load_current_value do
+  @state = get_current_state(service_name)
 end
 
 action :enable do
@@ -88,40 +87,18 @@ action :enable do
 end
 
 action :start do
-  case current_resource.state
+  case @current_resource.state
   when 'UNAVAILABLE'
     raise "Supervisor service #{new_resource.name} cannot be started because it does not exist"
   when 'RUNNING'
     Chef::Log.debug "#{ new_resource } is already started."
   when 'STARTING'
     Chef::Log.debug "#{ new_resource } is already starting."
-    wait_til_state("RUNNING")
+    wait_til_state("RUNNING", 20, new_resource)
   else
     if not supervisorctl('start', new_resource)
       raise "Supervisor service #{new_resource.name} was unable to be started"
     end
-  end
-end
-
-def enable_service(new_resource)
-  execute "supervisorctl update" do
-    action :nothing
-    user "root"
-  end
-
-  t = template "#{node['supervisor']['dir']}/#{new_resource.service_name}.conf" do
-    source "program.conf.erb"
-    cookbook "supervisor"
-    owner "root"
-    group "root"
-    mode "644"
-    variables :prog => new_resource
-    notifies :run, "execute[supervisorctl update]", :immediately
-  end
-
-  t.run_action(:create)
-  if t.updated?
-    e.run_action(:run)
   end
 end
 
@@ -138,7 +115,6 @@ end
 
 def supervisorctl(action, new_resource)
   cmd = "supervisorctl #{action} #{cmd_line_args(new_resource)} | grep -v ERROR"
-  Chef::Log.error("CGY - Running #{cmd}")
   result = shell_out(cmd).run_command
   # Since we append grep to the command
   # The command will have an exit code of 1 upon failure
@@ -152,4 +128,18 @@ def cmd_line_args(new_resource)
     name += ':*'
   end
   name
+end
+
+def wait_til_state(state, max_tries = 20, new_resource)
+  service = new_resource.service_name
+
+  max_tries.times do
+    return if get_current_state(service) == state
+
+    Chef::Log.debug("Waiting for service #{service} to be in state #{state}")
+    sleep 1
+  end
+
+  raise "service #{service} not in state #{state} after #{max_tries} tries"
+
 end

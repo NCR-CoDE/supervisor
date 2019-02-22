@@ -113,6 +113,40 @@ action :restart do
   end
 end
 
+action :stop do
+  case @current_resource.state
+  when 'UNAVAILABLE'
+    raise "Supervisor service #{new_resource.name} cannot be stopped because it does not exist"
+  when 'STOPPED'
+    Chef::Log.debug "#{ new_resource } is already stopped."
+  when 'STOPPING'
+    Chef::Log.debug "#{ new_resource } is already stopping."
+    wait_til_state("STOPPED", 20, new_resource)
+  else
+    if not supervisorctl('stop', new_resource)
+      raise "Supervisor service #{new_resource.name} was unable to be stopped"
+    end
+  end
+end
+
+
+action :disable do
+  if @current_resource.state == 'UNAVAILABLE'
+    Chef::Log.info "#{new_resource} is already disabled."
+  else
+    execute "supervisorctl update" do
+      action :nothing
+      user "root"
+    end
+
+    file "#{node['supervisor']['dir']}/#{new_resource.service_name}.conf" do
+      action :delete
+      notifies :run, "execute[supervisorctl update]", :immediately
+    end
+  end
+end
+
+
 def get_current_state(service_name)
   result = shell_out("supervisorctl status")
   match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")
@@ -152,5 +186,5 @@ def wait_til_state(state, max_tries = 20, new_resource)
   end
 
   raise "service #{service} not in state #{state} after #{max_tries} tries"
-
 end
+

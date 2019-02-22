@@ -13,6 +13,10 @@ supervisor_service "enabling netcat" do
 end
 
 supervisor_service "netcat" do
-  action :start
-  
+  action :start  
 end
+
+supervisor_service "netcat" do
+  action :restart
+end
+

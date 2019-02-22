@@ -102,6 +102,17 @@ action :start do
   end
 end
 
+action :restart do
+  case @current_resource.state
+  when 'UNAVAILABLE'
+    raise "Supervisor service #{new_resource.name} cannot be restarted because it does not exist"
+  else
+    if not supervisorctl('restart', new_resource)
+      raise "Supervisor service #{new_resource.name} was unable to be started"
+    end
+  end
+end
+
 def get_current_state(service_name)
   result = shell_out("supervisorctl status")
   match = result.stdout.match("(^#{service_name}(\\:\\S+)?\\s*)([A-Z]+)(.+)")

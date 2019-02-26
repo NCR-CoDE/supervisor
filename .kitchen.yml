@@ -19,3 +19,8 @@ suites:
     run_list:
       - recipe[supervisor::compile_python]
       - recipe[supervisor::default]
+  - name: supervisord
+    run_list:
+      - recipe[supervisor::compile_python]
+      - recipe[supervisor::default]
+      - recipe[supervisor::test_resource]
